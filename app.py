@@ -10,6 +10,7 @@ from weasyprint import HTML
 app = Flask(__name__)
 
 # CSS curly braces are doubled {{ }} so Python format() ignores them
+# Added word-break: break-all to ensure absolutely no text escapes the cell borders
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -22,7 +23,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .header h3 {{ margin: 5px 0; font-size: 16px; font-weight: normal; color: #555; }}
     .header h4 {{ margin: 10px 0 0 0; font-size: 18px; font-weight: bold; background-color: #003366; color: white; display: inline-block; padding: 8px 15px; border-radius: 5px; }}
     table {{ width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; font-size: 11px; }}
-    th, td {{ border: 1px solid #ddd; padding: 8px 5px; text-align: right; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; white-space: pre-wrap; }}
+    th, td {{ border: 1px solid #ddd; padding: 8px 5px; text-align: right; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: pre-wrap; }}
     th {{ background-color: #003366; color: white; font-weight: bold; text-align: center; }}
     tr:nth-child(even) {{ background-color: #f9f9f9; }}
     .center-text {{ text-align: center; direction: ltr; }}
@@ -38,13 +39,13 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <tr>
             <th style="width: 9%;">المادة<br>Subject</th>
             <th style="width: 10%;">اسم المعلم<br>Teacher</th>
-            <th style="width: 6%;">الصف<br>Class</th>
+            <th style="width: 5%;">الصف<br>Class</th>
             <th style="width: 11%;">الاثنين<br>Monday</th>
             <th style="width: 11%;">الثلاثاء<br>Tuesday</th>
             <th style="width: 11%;">الأربعاء<br>Wednesday</th>
             <th style="width: 11%;">الخميس<br>Thursday</th>
             <th style="width: 11%;">الجمعة<br>Friday</th>
-            <th style="width: 20%;">نواتج التعلم<br>Learning Objectives</th>
+            <th style="width: 21%;">نواتج التعلم<br>Learning Objectives</th>
         </tr>
         {rows}
     </table>
@@ -56,8 +57,8 @@ def clean_text(text):
     t = str(text).strip()
     if not t: return '-'
     
-    # Fix for cropping: break up ridiculously long unbroken words
-    t = re.sub(r'(\S{40})', r'\1 ', t) 
+    # Extra layer of protection: break up any continuous string longer than 35 characters
+    t = re.sub(r'(\S{35})', r'\1 ', t) 
     t = html.escape(t)
     return t.replace('\n', '<br>')
 
