@@ -9,23 +9,23 @@ from weasyprint import HTML
 
 app = Flask(__name__)
 
-# The exact CSS and layout you requested
+# CSS curly braces must be doubled {{ }} so Python format() ignores them
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <style>
-    @page { size: A4 landscape; margin: 10mm; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; color: #333; }
-    .header { text-align: center; color: #003366; border-bottom: 3px solid #003366; padding-bottom: 10px; margin-bottom: 15px; }
-    .header h2 { margin: 5px 0; font-size: 22px; }
-    .header h3 { margin: 5px 0; font-size: 16px; font-weight: normal; color: #555; }
-    .header h4 { margin: 10px 0 0 0; font-size: 18px; font-weight: bold; background-color: #003366; color: white; display: inline-block; padding: 8px 15px; border-radius: 5px; }
-    table { width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-    th, td { border: 1px solid #ddd; padding: 8px 5px; text-align: right; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; white-space: pre-wrap; }
-    th { background-color: #003366; color: white; font-weight: bold; text-align: center; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    .center-text { text-align: center; direction: ltr; }
+    @page {{ size: A4 landscape; margin: 10mm; }}
+    body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; color: #333; }}
+    .header {{ text-align: center; color: #003366; border-bottom: 3px solid #003366; padding-bottom: 10px; margin-bottom: 15px; }}
+    .header h2 {{ margin: 5px 0; font-size: 22px; }}
+    .header h3 {{ margin: 5px 0; font-size: 16px; font-weight: normal; color: #555; }}
+    .header h4 {{ margin: 10px 0 0 0; font-size: 18px; font-weight: bold; background-color: #003366; color: white; display: inline-block; padding: 8px 15px; border-radius: 5px; }}
+    table {{ width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; font-size: 11px; }}
+    th, td {{ border: 1px solid #ddd; padding: 8px 5px; text-align: right; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; white-space: pre-wrap; }}
+    th {{ background-color: #003366; color: white; font-weight: bold; text-align: center; }}
+    tr:nth-child(even) {{ background-color: #f9f9f9; }}
+    .center-text {{ text-align: center; direction: ltr; }}
 </style>
 </head>
 <body>
@@ -55,7 +55,8 @@ def clean_text(text):
     if pd.isna(text): return '-'
     t = str(text).strip()
     if not t: return '-'
-    # FIX FOR CROPPING: Forces long unbroken links/words to wrap so they don't push columns off the page
+    
+    # Fix for cropping: break up ridiculously long unbroken words (like long email/links)
     t = re.sub(r'(\S{40})', r'\1 ', t) 
     t = html.escape(t)
     return t.replace('\n', '<br>')
