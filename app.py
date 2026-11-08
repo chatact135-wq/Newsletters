@@ -9,13 +9,14 @@ from weasyprint import HTML
 
 app = Flask(__name__)
 
-# CSS template with fixed layout.
-# Note: we use <div dir="auto"> inside table cells to perfectly handle English/Arabic mixed text without clipping.
+# CSS curly braces are doubled {{ }} so Python format() ignores them.
+# FIX: Added * { box-sizing: border-box; } and adjusted column widths to exactly 100%
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <style>
+    * {{ box-sizing: border-box; }}
     @page {{ size: A4 landscape; margin: 10mm; }}
     body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; color: #333; }}
     .header {{ text-align: center; color: #003366; border-bottom: 3px solid #003366; padding-bottom: 10px; margin-bottom: 15px; }}
@@ -38,15 +39,16 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     </div>
     <table>
         <tr>
+            <!-- THE SUM OF THESE WIDTHS IS EXACTLY 100% NOW -->
             <th style="width: 9%;">المادة<br>Subject</th>
             <th style="width: 10%;">اسم المعلم<br>Teacher</th>
             <th style="width: 6%;">الصف<br>Class</th>
-            <th style="width: 11%;">الاثنين<br>Monday</th>
-            <th style="width: 11%;">الثلاثاء<br>Tuesday</th>
-            <th style="width: 11%;">الأربعاء<br>Wednesday</th>
-            <th style="width: 11%;">الخميس<br>Thursday</th>
-            <th style="width: 11%;">الجمعة<br>Friday</th>
-            <th style="width: 21%;">نواتج التعلم<br>Learning Objectives</th>
+            <th style="width: 10%;">الاثنين<br>Monday</th>
+            <th style="width: 10%;">الثلاثاء<br>Tuesday</th>
+            <th style="width: 10%;">الأربعاء<br>Wednesday</th>
+            <th style="width: 10%;">الخميس<br>Thursday</th>
+            <th style="width: 10%;">الجمعة<br>Friday</th>
+            <th style="width: 25%;">نواتج التعلم<br>Learning Objectives</th>
         </tr>
         {rows}
     </table>
@@ -110,8 +112,6 @@ def upload_file():
                     
                     rows_html = ""
                     for _, row in subset.iterrows():
-                        # We wrap every cell content in <div dir="auto" class="cell-content"> 
-                        # This fixes the English text cropping issue completely.
                         r_html = f"""
                     <tr>
                         <td><div dir="auto" class="cell-content"><strong>{clean_text(row[col_subject])}</strong></div></td>
