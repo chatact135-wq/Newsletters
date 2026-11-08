@@ -9,8 +9,8 @@ from weasyprint import HTML
 
 app = Flask(__name__)
 
-# CSS curly braces are doubled {{ }} so Python format() ignores them
-# Added word-break: break-all to ensure absolutely no text escapes the cell borders
+# CSS template with fixed layout.
+# Note: we use <div dir="auto"> inside table cells to perfectly handle English/Arabic mixed text without clipping.
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -23,10 +23,11 @@ HTML_TEMPLATE = """<!DOCTYPE html>
     .header h3 {{ margin: 5px 0; font-size: 16px; font-weight: normal; color: #555; }}
     .header h4 {{ margin: 10px 0 0 0; font-size: 18px; font-weight: bold; background-color: #003366; color: white; display: inline-block; padding: 8px 15px; border-radius: 5px; }}
     table {{ width: 100%; table-layout: fixed; border-collapse: collapse; margin-top: 10px; font-size: 11px; }}
-    th, td {{ border: 1px solid #ddd; padding: 8px 5px; text-align: right; vertical-align: top; word-wrap: break-word; overflow-wrap: break-word; word-break: break-all; white-space: pre-wrap; }}
+    th, td {{ border: 1px solid #ddd; padding: 8px 5px; vertical-align: top; }}
     th {{ background-color: #003366; color: white; font-weight: bold; text-align: center; }}
     tr:nth-child(even) {{ background-color: #f9f9f9; }}
     .center-text {{ text-align: center; direction: ltr; }}
+    .cell-content {{ word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; white-space: pre-wrap; }}
 </style>
 </head>
 <body>
@@ -39,7 +40,7 @@ HTML_TEMPLATE = """<!DOCTYPE html>
         <tr>
             <th style="width: 9%;">المادة<br>Subject</th>
             <th style="width: 10%;">اسم المعلم<br>Teacher</th>
-            <th style="width: 5%;">الصف<br>Class</th>
+            <th style="width: 6%;">الصف<br>Class</th>
             <th style="width: 11%;">الاثنين<br>Monday</th>
             <th style="width: 11%;">الثلاثاء<br>Tuesday</th>
             <th style="width: 11%;">الأربعاء<br>Wednesday</th>
@@ -57,7 +58,7 @@ def clean_text(text):
     t = str(text).strip()
     if not t: return '-'
     
-    # Extra layer of protection: break up any continuous string longer than 35 characters
+    # Break long unbroken words/links over 35 chars
     t = re.sub(r'(\S{35})', r'\1 ', t) 
     t = html.escape(t)
     return t.replace('\n', '<br>')
@@ -109,17 +110,19 @@ def upload_file():
                     
                     rows_html = ""
                     for _, row in subset.iterrows():
+                        # We wrap every cell content in <div dir="auto" class="cell-content"> 
+                        # This fixes the English text cropping issue completely.
                         r_html = f"""
                     <tr>
-                        <td><strong>{clean_text(row[col_subject])}</strong></td>
-                        <td><strong>{clean_text(row[col_teacher])}</strong></td>
-                        <td class="center-text">{cls}</td>
-                        <td>{clean_text(row[col_mon])}</td>
-                        <td>{clean_text(row[col_tue])}</td>
-                        <td>{clean_text(row[col_wed])}</td>
-                        <td>{clean_text(row[col_thu])}</td>
-                        <td>{clean_text(row[col_fri])}</td>
-                        <td>{clean_text(row[col_outcomes])}</td>
+                        <td><div dir="auto" class="cell-content"><strong>{clean_text(row[col_subject])}</strong></div></td>
+                        <td><div dir="auto" class="cell-content"><strong>{clean_text(row[col_teacher])}</strong></div></td>
+                        <td class="center-text"><div dir="auto" class="cell-content">{cls}</div></td>
+                        <td><div dir="auto" class="cell-content">{clean_text(row[col_mon])}</div></td>
+                        <td><div dir="auto" class="cell-content">{clean_text(row[col_tue])}</div></td>
+                        <td><div dir="auto" class="cell-content">{clean_text(row[col_wed])}</div></td>
+                        <td><div dir="auto" class="cell-content">{clean_text(row[col_thu])}</div></td>
+                        <td><div dir="auto" class="cell-content">{clean_text(row[col_fri])}</div></td>
+                        <td><div dir="auto" class="cell-content">{clean_text(row[col_outcomes])}</div></td>
                     </tr>"""
                         rows_html += r_html
                         
