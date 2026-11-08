@@ -9,7 +9,7 @@ from weasyprint import HTML
 
 app = Flask(__name__)
 
-# CSS curly braces must be doubled {{ }} so Python format() ignores them
+# CSS curly braces are doubled {{ }} so Python format() ignores them
 HTML_TEMPLATE = """<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -56,7 +56,7 @@ def clean_text(text):
     t = str(text).strip()
     if not t: return '-'
     
-    # Fix for cropping: break up ridiculously long unbroken words (like long email/links)
+    # Fix for cropping: break up ridiculously long unbroken words
     t = re.sub(r'(\S{40})', r'\1 ', t) 
     t = html.escape(t)
     return t.replace('\n', '<br>')
@@ -78,7 +78,6 @@ def upload_file():
             df = pd.read_excel(file)
             df = df.fillna('')
             
-            # Dynamically grab the columns just in case of hidden spaces
             col_class = [c for c in df.columns if 'الصف' in c or 'Class' in c][0]
             col_subject = [c for c in df.columns if 'المادة' in c or 'Subject' in c][0]
             col_teacher = [c for c in df.columns if 'Teacher' in c or 'اسم المعلم' in c][0]
@@ -89,7 +88,6 @@ def upload_file():
             col_fri = [c for c in df.columns if 'Friday' in c or 'الجمعة' in c][0]
             col_outcomes = [c for c in df.columns if 'Learning' in c or 'نواتج' in c][0]
 
-            # Get unique classes
             all_classes = set()
             for val in df[col_class]:
                 parts = re.split(r'[;,]', str(val))
@@ -99,7 +97,6 @@ def upload_file():
                         all_classes.add(p_clean)
             all_classes = sorted(list(all_classes))
 
-            # Create PDFs in a temporary directory and zip them
             with tempfile.TemporaryDirectory() as temp_dir:
                 pdf_files = []
                 for cls in all_classes:
@@ -132,13 +129,11 @@ def upload_file():
                     HTML(string=final_html).write_pdf(pdf_path)
                     pdf_files.append(pdf_path)
 
-                # Zip the files
                 zip_path = os.path.join(temp_dir, "Weekly_Lesson_Plans.zip")
                 with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
                     for pf in pdf_files:
                         zipf.write(pf, os.path.basename(pf))
                 
-                # Send the zip to the user
                 return send_file(zip_path, as_attachment=True, download_name="Weekly_Lesson_Plans.zip")
         except Exception as e:
             return f"An error occurred: {str(e)}", 500
