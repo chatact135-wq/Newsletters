@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تقرير النواقص</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Arial; background-color: #f4f7f6; margin: 0; padding: 30px; text-align: center; }
+        .container { background-color: white; max-width: 800px; margin: auto; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { color: #d32f2f; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
+        th { background-color: #f1f1f1; color: #333; }
+        button { margin-top: 30px; padding: 12px 25px; background-color: #003366; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; font-weight: bold; }
+        button:hover { background-color: #002244; }
+        .no-missing { color: green; font-size: 18px; font-weight: bold; margin: 20px 0; }
+        #loader { display: none; margin-top: 20px; color: #003366; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>تقرير استلام الخطط الأسبوعية</h2>
+        
+        {% if missing|length == 0 %}
+            <div class="no-missing">ممتاز! جميع المعلمين قاموا بتسليم الخطة الأسبوعية بالكامل.</div>
+        {% else %}
+            <p><strong>تحذير:</strong> هناك {{ missing|length }} خطة لم يتم تسليمها في هذا الملف (باستثناء مواد التربية البدنية، الفنون، والتكنولوجيا):</p>
+            <table>
+                <tr>
+                    <th>الصف</th>
+                    <th>المادة</th>
+                    <th>اسم المعلم المتوقع</th>
+                </tr>
+                {% for item in missing %}
+                <tr>
+                    <td dir="ltr">{{ item.class_display }}</td>
+                    <td>{{ item.subject_display }}</td>
+                    <td>{{ item.teacher }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% endif %}
+        
+        <form action="/generate/{{ file_id }}" method="post" onsubmit="document.getElementById('loader').style.display='block'; document.getElementById('genBtn').style.display='none';">
+            <button type="submit" id="genBtn">توليد الخطة الأسبوعية على أية حال (Generate ZIP anyway)</button>
+        </form>
+        <div id="loader">جاري إنشاء ملفات الـ PDF... يرجى الانتظار.</div>
+    </div>
+</body>
+</html>
